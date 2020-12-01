@@ -1,18 +1,18 @@
 package org.bourgedetrembleur.snmp;
 
-import org.snmp4j.PDU;
+import javafx.application.Platform;
+import javafx.scene.control.TextArea;
 import org.snmp4j.Snmp;
 import org.snmp4j.event.ResponseEvent;
 import org.snmp4j.event.ResponseListener;
-import org.snmp4j.smi.VariableBinding;
 
 public class SnmpListener implements ResponseListener
 {
-    private SnmpManager snmpManager;
+    private final TextArea textArea;
 
-    public SnmpListener(SnmpManager snmpManager)
+    public SnmpListener(TextArea textArea)
     {
-        this.snmpManager = snmpManager;
+        this.textArea = textArea;
     }
 
     @Override
@@ -20,14 +20,14 @@ public class SnmpListener implements ResponseListener
     {
         ((Snmp) responseEvent.getSource()).cancel(responseEvent.getRequest(), this);
 
-        PDU pdu = responseEvent.getResponse();
-        for(VariableBinding variableBinding : pdu.getVariableBindings())
+        String buffer = "";
+        var variables = responseEvent.getResponse().getVariableBindings();
+        for(var v : variables)
         {
-            System.err.println(variableBinding);
+            buffer += v.toString() + "\n";
         }
-        synchronized (snmpManager)
-        {
-            snmpManager.notify();
-        }
+        final String finalBuffer = buffer;
+        System.err.println("ASYNC RECV");
+        Platform.runLater(() -> textArea.setText(finalBuffer + "\n\n" + textArea.getText()));
     }
 }

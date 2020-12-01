@@ -13,7 +13,6 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-
 <AnchorPane prefHeight="598.0" prefWidth="942.0" styleClass="main-panel" stylesheets="@mail.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.bourgedetrembleur.MainController">
    <children>
       <VBox layoutX="1.0" layoutY="1.0" prefHeight="598.0" prefWidth="942.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -28,14 +27,14 @@
                         <HBox prefHeight="5.0" prefWidth="942.0" spacing="50.0">
                            <children>
                               <Label prefWidth="100.0" text="Agent IP: " />
-                              <TextField fx:id="ipAgentTextField" prefWidth="300.0" />
+                              <TextField fx:id="ipAgentTextField" prefWidth="300.0" text="95.182.224.2" />
                               <Button fx:id="pingButton" mnemonicParsing="false" onAction="#ping_Action" text="PING" />
                            </children>
                         </HBox>
                         <HBox prefHeight="5.0" prefWidth="942.0" spacing="50.0">
                            <children>
                               <Label prefWidth="100.0" text="Community: " />
-                              <TextField fx:id="communityTextField" prefWidth="300.0" />
+                              <TextField fx:id="communityTextField" prefWidth="300.0" text="2326bldaWR" />
                            </children>
                         </HBox>
                         <HBox prefHeight="5.0" prefWidth="942.0" spacing="50.0">
@@ -72,6 +71,7 @@
                               <Button fx:id="getButton" mnemonicParsing="false" onAction="#get_Action" text="GET" />
                               <Button fx:id="getNextButton" mnemonicParsing="false" onAction="#getNext_Action" text="GET NEXT" />
                               <Button mnemonicParsing="false" onAction="#set_Action" text="SET" />
+                              <TextField fx:id="newValuesTextField" promptText="new value" />
                            </children>
                         </HBox>
                      </children>
@@ -84,7 +84,10 @@
                   </VBox>
                </children>
             </HBox>
-            <TextArea fx:id="resultTextArea" editable="false" prefHeight="335.0" prefWidth="940.0" />
+            <TextArea fx:id="resultTextArea" editable="false" prefHeight="335.0" prefWidth="940.0">
+               <VBox.margin>
+                  <Insets bottom="5.0" top="5.0" />
+               </VBox.margin></TextArea>
             <Button mnemonicParsing="false" onAction="#clearResults_Action" text="CLEAR" />
          </children>
          <padding>

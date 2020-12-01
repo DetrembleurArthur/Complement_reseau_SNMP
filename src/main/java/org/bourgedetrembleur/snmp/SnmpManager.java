@@ -21,6 +21,7 @@ public class SnmpManager
     private CommunityTarget<UdpAddress> communityTarget;
     private UdpAddress address;
     private Snmp snmp;
+    private SnmpListener snmpListener;
 
     public SnmpManager()
     {
@@ -40,6 +41,11 @@ public class SnmpManager
         {
             e.printStackTrace();
         }
+    }
+
+    public void setSnmpListener(SnmpListener snmpListener)
+    {
+        this.snmpListener = snmpListener;
     }
 
     public void setCommunity(String community)
@@ -105,8 +111,6 @@ public class SnmpManager
         pdu.setType(PDU.GET);
 
 
-        SnmpListener snmpListener = new SnmpListener(this);
-
         try
         {
             snmp.send(pdu, communityTarget, null, snmpListener);
@@ -130,9 +134,6 @@ public class SnmpManager
         }
         pdu.setType(PDU.GETNEXT);
 
-
-        SnmpListener snmpListener = new SnmpListener(this);
-
         try
         {
             snmp.send(pdu, communityTarget, null, snmpListener);
@@ -144,6 +145,23 @@ public class SnmpManager
         }
 
 
+        return null;
+    }
+
+    public List<? extends VariableBinding> set(OID oid, String value)
+    {
+        PDU pdu = new PDU();
+        pdu.add(new VariableBinding(oid, new OctetString(value)));
+        pdu.setType(PDU.SET);
+
+        try
+        {
+            ResponseEvent responseEvent = snmp.set(pdu, communityTarget);
+            return responseEvent.getResponse().getVariableBindings();
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
         return null;
     }
 

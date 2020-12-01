@@ -3,7 +3,10 @@ package org.bourgedetrembleur;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.stage.Popup;
+import javafx.stage.PopupWindow;
 import org.bourgedetrembleur.snmp.Ping;
+import org.bourgedetrembleur.snmp.SnmpListener;
 import org.snmp4j.smi.OID;
 
 import java.net.URL;
@@ -48,52 +51,91 @@ public class MainController implements Initializable
     @FXML
     private TextArea resultTextArea;
 
+    @FXML
+    private TextField newValuesTextField;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle)
     {
         retriesSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10));
         timeoutSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1000, 5000, 1000, 100));
+
+        App.getSnmpManager().setSnmpListener(new SnmpListener(resultTextArea));
     }
 
 
     @FXML
     public void get_Action()
     {
-         String buffer = "";
-         add_Action();
-         App.getSnmpManager().setIp(ipAgentTextField.getText());
-         App.getSnmpManager().setCommunity(communityTextField.getText());
-         App.getSnmpManager().setRetries(retriesSpinner.getValue());
-         App.getSnmpManager().setTimeout(timeoutSpinner.getValue());
-         var variables = App.getSnmpManager().get(oidsListView.getItems());
-         for(var v : variables)
-         {
-             buffer += v.toString() + "\n";
-         }
-         resultTextArea.setText(buffer + "\n\n" + resultTextArea.getText());
-    }
-
-    @FXML
-    public void getNext_Action()
-    {
-        String buffer = "";
         add_Action();
         App.getSnmpManager().setIp(ipAgentTextField.getText());
         App.getSnmpManager().setCommunity(communityTextField.getText());
         App.getSnmpManager().setRetries(retriesSpinner.getValue());
         App.getSnmpManager().setTimeout(timeoutSpinner.getValue());
-        var variables = App.getSnmpManager().getNext(oidsListView.getItems());
-        for(var v : variables)
+        if(!asynchronousCheckBox.isSelected())
         {
-            buffer += v.toString() + "\n";
+            String buffer = "";
+            var variables = App.getSnmpManager().get(oidsListView.getItems());
+            for(var v : variables)
+            {
+                buffer += v.toString() + "\n";
+            }
+            resultTextArea.setText(buffer + "\n\n" + resultTextArea.getText());
         }
-        resultTextArea.setText(buffer + "\n\n" + resultTextArea.getText());
+        else
+        {
+            App.getSnmpManager().getAsync(oidsListView.getItems());
+        }
+    }
+
+    @FXML
+    public void getNext_Action()
+    {
+        add_Action();
+        App.getSnmpManager().setIp(ipAgentTextField.getText());
+        App.getSnmpManager().setCommunity(communityTextField.getText());
+        App.getSnmpManager().setRetries(retriesSpinner.getValue());
+        App.getSnmpManager().setTimeout(timeoutSpinner.getValue());
+        if(!asynchronousCheckBox.isSelected())
+        {
+            String buffer = "";
+            var variables = App.getSnmpManager().getNext(oidsListView.getItems());
+            for(var v : variables)
+            {
+                buffer += v.toString() + "\n";
+            }
+            resultTextArea.setText(buffer + "\n\n" + resultTextArea.getText());
+        }
+        else
+        {
+            App.getSnmpManager().getNextAsync(oidsListView.getItems());
+        }
     }
 
     @FXML
     public void set_Action()
     {
-
+        App.getSnmpManager().setIp(ipAgentTextField.getText());
+        App.getSnmpManager().setCommunity(communityTextField.getText());
+        App.getSnmpManager().setRetries(retriesSpinner.getValue());
+        App.getSnmpManager().setTimeout(timeoutSpinner.getValue());
+        String buffer = "";
+        OID oid = oidsListView.getSelectionModel().getSelectedItem();
+        if(oid != null)
+        {
+            var variables = App.getSnmpManager().set(oid, newValuesTextField.getText());
+            for (var v : variables)
+            {
+                buffer += v.toString() + "\n";
+            }
+            resultTextArea.setText(buffer + "\n\n" + resultTextArea.getText());
+        }
+        else
+        {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "[ERROR] select an OID", ButtonType.OK);
+            alert.showAndWait();
+            resultTextArea.setText("[ERROR] select an OID\n" + resultTextArea.getText());
+        }
     }
 
     @FXML
