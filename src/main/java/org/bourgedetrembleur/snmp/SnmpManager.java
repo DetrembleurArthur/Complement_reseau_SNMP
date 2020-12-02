@@ -50,18 +50,16 @@ public class SnmpManager
 
     public void setCommunity(String community)
     {
-        System.err.println(community);
         communityTarget.setCommunity(new OctetString(community));
     }
 
     public void setIp(String ip)
     {
-        System.err.println(ip);
         address = new UdpAddress(ip + "/161");
         communityTarget.setAddress(address);
     }
 
-    public List<? extends VariableBinding> get(Collection<OID> oids)
+    public List<? extends VariableBinding> get(Collection<OID> oids) throws Exception
     {
         PDU pdu = new PDU();
         for(OID oid : oids)
@@ -73,7 +71,12 @@ public class SnmpManager
         try
         {
             ResponseEvent responseEvent = snmp.get(pdu, communityTarget);
-            return responseEvent.getResponse().getVariableBindings();
+            if(responseEvent == null)
+                throw new Exception(address.getInetAddress().getHostAddress() + " is not reachable");
+            PDU resp = responseEvent.getResponse();
+            if(resp == null)
+                throw new Exception(address.getInetAddress().getHostAddress() + " is not reachable");
+            return resp.getVariableBindings();
         } catch (IOException e)
         {
             e.printStackTrace();
@@ -81,7 +84,7 @@ public class SnmpManager
         return null;
     }
 
-    public List<? extends VariableBinding> getNext(Collection<OID> oids)
+    public List<? extends VariableBinding> getNext(Collection<OID> oids) throws Exception
     {
         PDU pdu = new PDU();
         for(OID oid : oids)
@@ -93,7 +96,21 @@ public class SnmpManager
         try
         {
             ResponseEvent responseEvent = snmp.getNext(pdu, communityTarget);
-            return responseEvent.getResponse().getVariableBindings();
+            if(responseEvent == null)
+                throw new Exception(address.getInetAddress().getHostAddress() + " is not reachable");
+            PDU resp = responseEvent.getResponse();
+            if(resp == null)
+                throw new Exception(address.getInetAddress().getHostAddress() + " is not reachable");
+            var variables = resp.getVariableBindings();
+
+            int i = 0;
+            for(var oid : oids)
+            {
+                System.err.println(variables.get(i).getOid());
+                oid.setValue(variables.get(i).getOid().getValue());
+                i++;
+            }
+            return resp.getVariableBindings();
         } catch (IOException e)
         {
             e.printStackTrace();
@@ -148,7 +165,7 @@ public class SnmpManager
         return null;
     }
 
-    public List<? extends VariableBinding> set(OID oid, String value)
+    public List<? extends VariableBinding> set(OID oid, String value) throws Exception
     {
         PDU pdu = new PDU();
         pdu.add(new VariableBinding(oid, new OctetString(value)));
@@ -157,7 +174,12 @@ public class SnmpManager
         try
         {
             ResponseEvent responseEvent = snmp.set(pdu, communityTarget);
-            return responseEvent.getResponse().getVariableBindings();
+            if(responseEvent == null)
+                throw new Exception(address.getInetAddress().getHostAddress() + " is not reachable");
+            PDU resp = responseEvent.getResponse();
+            if(resp == null)
+                throw new Exception(address.getInetAddress().getHostAddress() + " is not reachable");
+            return resp.getVariableBindings();
         } catch (IOException e)
         {
             e.printStackTrace();

@@ -6,6 +6,8 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -13,8 +15,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-
-<AnchorPane prefHeight="598.0" prefWidth="942.0" styleClass="main-panel" stylesheets="@mail.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.bourgedetrembleur.MainController">
+<AnchorPane prefHeight="795.0" prefWidth="1201.0" styleClass="main-panel" stylesheets="@mail.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.bourgedetrembleur.MainController">
    <children>
       <VBox layoutX="1.0" layoutY="1.0" prefHeight="598.0" prefWidth="942.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -23,19 +24,19 @@
                   <Insets left="20.0" top="20.0" />
                </VBox.margin>
                <children>
-                  <VBox spacing="15.0">
+                  <VBox prefHeight="368.0" prefWidth="657.0" spacing="15.0">
                      <children>
                         <HBox prefHeight="5.0" prefWidth="942.0" spacing="50.0">
                            <children>
                               <Label prefWidth="100.0" text="Agent IP: " />
-                              <TextField fx:id="ipAgentTextField" prefWidth="300.0" />
+                              <TextField fx:id="ipAgentTextField" prefWidth="300.0" text="127.0.0.1" />
                               <Button fx:id="pingButton" mnemonicParsing="false" onAction="#ping_Action" text="PING" />
                            </children>
                         </HBox>
                         <HBox prefHeight="5.0" prefWidth="942.0" spacing="50.0">
                            <children>
                               <Label prefWidth="100.0" text="Community: " />
-                              <TextField fx:id="communityTextField" prefWidth="300.0" />
+                              <TextField fx:id="communityTextField" prefWidth="300.0" text="2326bldaWR" />
                            </children>
                         </HBox>
                         <HBox prefHeight="5.0" prefWidth="942.0" spacing="50.0">
@@ -72,19 +73,45 @@
                               <Button fx:id="getButton" mnemonicParsing="false" onAction="#get_Action" text="GET" />
                               <Button fx:id="getNextButton" mnemonicParsing="false" onAction="#getNext_Action" text="GET NEXT" />
                               <Button mnemonicParsing="false" onAction="#set_Action" text="SET" />
+                              <TextField fx:id="newValuesTextField" promptText="new value" />
                            </children>
                         </HBox>
                      </children>
                   </VBox>
-                  <VBox alignment="TOP_RIGHT">
-                     <children>
-                        <ListView fx:id="oidsListView" prefHeight="310.0" prefWidth="714.0" />
-                        <Button mnemonicParsing="false" onAction="#clearOids_Action" text="CLEAR" />
-                     </children>
-                  </VBox>
+                  <TabPane>
+                     <tabs>
+                        <Tab fx:id="oidTab" closable="false" text="OID(s)">
+                           <content>
+                              <VBox alignment="TOP_RIGHT">
+                                 <children>
+                                    <ListView fx:id="oidsListView" prefHeight="310.0" prefWidth="714.0" />
+                                    <Button mnemonicParsing="false" onAction="#clearOids_Action" text="CLEAR" />
+                                 </children>
+                              </VBox>
+                           </content>
+                        </Tab>
+                        <Tab closable="false" text="Browser">
+                          <content>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <children>
+                                    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <children>
+                                          <Button mnemonicParsing="false" onAction="#generateMibBrowser" text="search" />
+                                          <ListView fx:id="oidRegistryListView" prefHeight="337.6" prefWidth="608.0" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </AnchorPane>
+                          </content>
+                        </Tab>
+                     </tabs>
+                  </TabPane>
                </children>
             </HBox>
-            <TextArea fx:id="resultTextArea" editable="false" prefHeight="335.0" prefWidth="940.0" />
+            <TextArea fx:id="resultTextArea" editable="false" prefHeight="335.0" prefWidth="940.0">
+               <VBox.margin>
+                  <Insets bottom="5.0" top="5.0" />
+               </VBox.margin></TextArea>
             <Button mnemonicParsing="false" onAction="#clearResults_Action" text="CLEAR" />
          </children>
          <padding>

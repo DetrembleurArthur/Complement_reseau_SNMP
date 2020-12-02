@@ -1,15 +1,17 @@
 package org.bourgedetrembleur;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.stage.Popup;
-import javafx.stage.PopupWindow;
 import org.bourgedetrembleur.snmp.Ping;
 import org.bourgedetrembleur.snmp.SnmpListener;
 import org.snmp4j.smi.OID;
+import org.snmp4j.smi.VariableBinding;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class MainController implements Initializable
@@ -54,33 +56,101 @@ public class MainController implements Initializable
     @FXML
     private TextField newValuesTextField;
 
+    @FXML
+    private ListView<OID> oidRegistryListView;
+
+    @FXML
+    private Tab oidTab;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle)
     {
         retriesSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10));
         timeoutSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1000, 5000, 1000, 100));
 
-        App.getSnmpManager().setSnmpListener(new SnmpListener(resultTextArea));
+        App.getSnmpManager().setSnmpListener(new SnmpListener(resultTextArea, oidsListView));
+
+
     }
 
+    private void error(String message)
+    {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "[ERROR] " + message, ButtonType.OK);
+            alert.showAndWait();
+            resultTextArea.setText("[ERROR] "+ message + "\n" + resultTextArea.getText());
+        });
+    }
+
+    boolean searching = false;
+    @FXML
+    private void generateMibBrowser()
+    {
+        updateInfos();
+        oidRegistryListView.getItems().clear();
+        if(!searching)
+            new Thread(() -> {
+                searching = true;
+                ArrayList<OID> oids = new ArrayList<>();
+                OID tmp = new OID("1");
+                oids.add(tmp);
+                try
+                {
+                    String soid = "1";
+                    while(true)
+                    {
+                        App.getSnmpManager().getNext(oids);
+
+                        if(soid.equals(oids.get(0).toString()))
+                            break;
+                        soid = oids.get(0).toString();
+                        String finalSoid = soid;
+                        Platform.runLater(() -> {
+                            if(!oidRegistryListView.getItems().contains(oids.get(0)))
+                                oidRegistryListView.getItems().add(new OID(finalSoid));
+                        });
+                    }
+
+                } catch (Exception e)
+                {
+                    error(e.getMessage());
+                }
+                searching = false;
+            }).start();
+
+    }
+
+    private void updateInfos()
+    {
+        try
+        {
+            App.getSnmpManager().setIp(ipAgentTextField.getText());
+            App.getSnmpManager().setCommunity(communityTextField.getText());
+            App.getSnmpManager().setRetries(retriesSpinner.getValue());
+            App.getSnmpManager().setTimeout(timeoutSpinner.getValue());
+        }
+        catch(RuntimeException e)
+        {
+            error(e.getMessage());
+        }
+    }
 
     @FXML
     public void get_Action()
     {
         add_Action();
-        App.getSnmpManager().setIp(ipAgentTextField.getText());
-        App.getSnmpManager().setCommunity(communityTextField.getText());
-        App.getSnmpManager().setRetries(retriesSpinner.getValue());
-        App.getSnmpManager().setTimeout(timeoutSpinner.getValue());
+        updateInfos();
         if(!asynchronousCheckBox.isSelected())
         {
-            String buffer = "";
-            var variables = App.getSnmpManager().get(oidsListView.getItems());
-            for(var v : variables)
+            try
             {
-                buffer += v.toString() + "\n";
+                var variables = App.getSnmpManager().get(oidsListView.getItems());
+                updateResults(variables);
             }
-            resultTextArea.setText(buffer + "\n\n" + resultTextArea.getText());
+            catch(Exception e)
+            {
+                error(e.getMessage());
+            }
         }
         else
         {
@@ -92,19 +162,19 @@ public class MainController implements Initializable
     public void getNext_Action()
     {
         add_Action();
-        App.getSnmpManager().setIp(ipAgentTextField.getText());
-        App.getSnmpManager().setCommunity(communityTextField.getText());
-        App.getSnmpManager().setRetries(retriesSpinner.getValue());
-        App.getSnmpManager().setTimeout(timeoutSpinner.getValue());
+        updateInfos();
         if(!asynchronousCheckBox.isSelected())
         {
-            String buffer = "";
-            var variables = App.getSnmpManager().getNext(oidsListView.getItems());
-            for(var v : variables)
+            try
             {
-                buffer += v.toString() + "\n";
+                var variables = App.getSnmpManager().getNext(oidsListView.getItems());
+                updateResults(variables);
+                oidsListView.getSelectionModel().selectFirst();
             }
-            resultTextArea.setText(buffer + "\n\n" + resultTextArea.getText());
+            catch(Exception e)
+            {
+                error(e.getMessage());
+            }
         }
         else
         {
@@ -112,29 +182,43 @@ public class MainController implements Initializable
         }
     }
 
+    private void updateResults(List<? extends VariableBinding> variables)
+    {
+        String buffer = "";
+        for(var v : variables)
+        {
+            if(v.toString().contains("Null"))
+            {
+                error("OID(s) wrong");
+                return;
+            }
+            buffer += v.toString() + "\n";
+        }
+        resultTextArea.setText(buffer + "\n\n" + resultTextArea.getText());
+    }
+
     @FXML
     public void set_Action()
     {
-        App.getSnmpManager().setIp(ipAgentTextField.getText());
-        App.getSnmpManager().setCommunity(communityTextField.getText());
-        App.getSnmpManager().setRetries(retriesSpinner.getValue());
-        App.getSnmpManager().setTimeout(timeoutSpinner.getValue());
-        String buffer = "";
+        updateInfos();
         OID oid = oidsListView.getSelectionModel().getSelectedItem();
         if(oid != null)
         {
-            var variables = App.getSnmpManager().set(oid, newValuesTextField.getText());
-            for (var v : variables)
+            try
             {
-                buffer += v.toString() + "\n";
+                if(newValuesTextField.getText().isBlank())
+                    throw new Exception("set values is blank...");
+                var variables = App.getSnmpManager().set(oid, newValuesTextField.getText());
+                updateResults(variables);
             }
-            resultTextArea.setText(buffer + "\n\n" + resultTextArea.getText());
+            catch(Exception e)
+            {
+                error(e.getMessage());
+            }
         }
         else
         {
-            Alert alert = new Alert(Alert.AlertType.WARNING, "[ERROR] select an OID", ButtonType.OK);
-            alert.showAndWait();
-            resultTextArea.setText("[ERROR] select an OID\n" + resultTextArea.getText());
+            error("select an OID");
         }
     }
 
@@ -153,16 +237,28 @@ public class MainController implements Initializable
     @FXML
     public void add_Action()
     {
-        String oid = oidTextField.getText();
-        if(oid != null && !oid.isBlank())
+        if(oidTab.isSelected())
         {
-            OID oid1 = new OID(oid);
-            if(!oidsListView.getItems().contains(oid1))
+            String oid = oidTextField.getText();
+            if(oid != null && !oid.isBlank())
             {
-                System.err.println("ADD");
-                oidsListView.getItems().add(oid1);
+                OID oid1 = new OID(oid);
+                if(!oidsListView.getItems().contains(oid1))
+                {
+                    System.err.println("ADD");
+                    oidsListView.getItems().add(oid1);
+                }
+                oidTextField.clear();
             }
-            oidTextField.clear();
+        }
+        else
+        {
+            OID oid = oidRegistryListView.getSelectionModel().getSelectedItem();
+            if(oid != null)
+            {
+                if(!oidsListView.getItems().contains(oid))
+                    oidsListView.getItems().add(new OID(oid.getValue()));
+            }
         }
     }
 
