@@ -190,3 +190,8 @@
 {
     -fx-background-color: white;
 }
+
+.toggle-button:selected
+{
+    -fx-text-fill: lime;
+}

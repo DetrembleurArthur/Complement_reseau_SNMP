@@ -83,32 +83,42 @@ public class MainController implements Initializable
     }
 
     boolean searching = false;
+    OID last = new OID("1");
+    @FXML
+    public ToggleButton fromBeginToggleButton;
+
     @FXML
     private void generateMibBrowser()
     {
         updateInfos();
         oidRegistryListView.getItems().clear();
+
         if(!searching)
+        {
+            if(fromBeginToggleButton.isSelected())
+                last = new OID("1");
             new Thread(() -> {
                 searching = true;
                 ArrayList<OID> oids = new ArrayList<>();
-                OID tmp = new OID("1");
+                OID tmp = last;
                 oids.add(tmp);
                 try
                 {
-                    String soid = "1";
-                    while(true)
+                    String soid = last.toDottedString();
+                    int i = 0;
+                    while (i < 500)
                     {
                         App.getSnmpManager().getNext(oids);
 
-                        if(soid.equals(oids.get(0).toString()))
+                        if (soid.equals(oids.get(0).toString()))
                             break;
                         soid = oids.get(0).toString();
                         String finalSoid = soid;
                         Platform.runLater(() -> {
-                            if(!oidRegistryListView.getItems().contains(oids.get(0)))
+                            if (!oidRegistryListView.getItems().contains(oids.get(0)))
                                 oidRegistryListView.getItems().add(new OID(finalSoid));
                         });
+                        i++;
                     }
 
                 } catch (Exception e)
@@ -117,6 +127,7 @@ public class MainController implements Initializable
                 }
                 searching = false;
             }).start();
+        }
 
     }
 

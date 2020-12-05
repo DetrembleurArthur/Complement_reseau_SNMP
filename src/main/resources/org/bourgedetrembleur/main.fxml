@@ -10,6 +10,7 @@
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -96,7 +97,12 @@
                                  <children>
                                     <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                        <children>
-                                          <Button mnemonicParsing="false" onAction="#generateMibBrowser" text="search" />
+                                          <HBox spacing="20.0">
+                                             <children>
+                                                <Button mnemonicParsing="false" onAction="#generateMibBrowser" text="search" />
+                                                <ToggleButton fx:id="fromBeginToggleButton" mnemonicParsing="false" text="From begin" />
+                                             </children>
+                                          </HBox>
                                           <ListView fx:id="oidRegistryListView" prefHeight="337.6" prefWidth="608.0" />
                                        </children>
                                     </VBox>

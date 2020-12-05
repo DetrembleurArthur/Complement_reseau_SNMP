@@ -118,7 +118,7 @@ public class SnmpManager
         return null;
     }
 
-    public List<? extends VariableBinding> getAsync(Collection<OID> oids)
+    public void getAsync(Collection<OID> oids)
     {
         PDU pdu = new PDU();
         for(OID oid : oids)
@@ -137,12 +137,9 @@ public class SnmpManager
         {
             e.printStackTrace();
         }
-
-
-        return null;
     }
 
-    public List<? extends VariableBinding> getNextAsync(Collection<OID> oids)
+    public void getNextAsync(Collection<OID> oids)
     {
         PDU pdu = new PDU();
         for(OID oid : oids)
@@ -160,9 +157,6 @@ public class SnmpManager
         {
             e.printStackTrace();
         }
-
-
-        return null;
     }
 
     public List<? extends VariableBinding> set(OID oid, String value) throws Exception

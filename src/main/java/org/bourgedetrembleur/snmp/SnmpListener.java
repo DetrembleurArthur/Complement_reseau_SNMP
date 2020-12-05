@@ -7,10 +7,7 @@ import org.snmp4j.PDU;
 import org.snmp4j.Snmp;
 import org.snmp4j.event.ResponseEvent;
 import org.snmp4j.event.ResponseListener;
-import org.snmp4j.mp.SnmpConstants;
 import org.snmp4j.smi.OID;
-
-import javax.net.ssl.SSLContext;
 
 public class SnmpListener implements ResponseListener
 {
