@@ -106,7 +106,7 @@ public class MainController implements Initializable
                 {
                     String soid = last.toDottedString();
                     int i = 0;
-                    while (i < 500)
+                    while (i < 30)
                     {
                         App.getSnmpManager().getNext(oids);
 

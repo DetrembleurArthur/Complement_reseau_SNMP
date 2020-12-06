@@ -100,7 +100,7 @@
                                           <HBox spacing="20.0">
                                              <children>
                                                 <Button mnemonicParsing="false" onAction="#generateMibBrowser" text="search" />
-                                                <ToggleButton fx:id="fromBeginToggleButton" mnemonicParsing="false" text="From begin" />
+                                                <ToggleButton fx:id="fromBeginToggleButton" mnemonicParsing="false" selected="true" text="From begin" />
                                              </children>
                                           </HBox>
                                           <ListView fx:id="oidRegistryListView" prefHeight="337.6" prefWidth="608.0" />
